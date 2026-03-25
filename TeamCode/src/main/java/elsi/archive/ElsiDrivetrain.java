@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode;
+package elsi.archive;
 
 
-import static org.firstinspires.ftc.teamcode.ElsiTelemetry.telemetry;
-import static org.firstinspires.ftc.teamcode.ElsiTeleop.teamColor;
+import static elsi.archive.ElsiTelemetry.telemetry;
+import static elsi.archive.ElsiTeleop.teamColor;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;

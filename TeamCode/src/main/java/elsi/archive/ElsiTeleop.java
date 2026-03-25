@@ -1,9 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package elsi.archive;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "Elsi", group = "TeleOp")
+@Disabled
 public class ElsiTeleop extends OpMode {
 
     private final boolean shootingEnabled = true;

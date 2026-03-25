@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.TeamColor;
+import elsi.archive.TeamColor;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.List;

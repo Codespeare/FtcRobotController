@@ -1,9 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package elsi.archive;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "Practice, Blue, Corner", group = "Practice")
+@Disabled
 public class ElsiPracticeTeleopBlueCorner extends ElsiTeleop {
 
     //Upper Red Starting Pose

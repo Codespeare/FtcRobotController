@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package elsi.archive;
 
-import static org.firstinspires.ftc.teamcode.ElsiTelemetry.panelsTelemetry;
+import static elsi.archive.ElsiTelemetry.panelsTelemetry;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.Sorter;

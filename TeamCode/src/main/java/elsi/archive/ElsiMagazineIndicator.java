@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package elsi.archive;
 
-import static org.firstinspires.ftc.teamcode.ElsiTelemetry.telemetry;
+import static elsi.archive.ElsiTelemetry.telemetry;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;

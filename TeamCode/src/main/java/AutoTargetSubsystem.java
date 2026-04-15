@@ -1,6 +1,3 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
-
-
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.pedropathing.geometry.Pose;

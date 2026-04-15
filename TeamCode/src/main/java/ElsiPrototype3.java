@@ -3,7 +3,6 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.AutoTargetSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import dev.nextftc.core.components.BindingsComponent;
@@ -21,6 +20,7 @@ public class ElsiPrototype3 extends NextFTCOpMode {
     {
         addComponents(
                 new SubsystemComponent(AutoTargetSubsystem.INSTANCE),
+                new SubsystemComponent(ParkSubsystem.INSTANCE),
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
@@ -39,7 +39,10 @@ public class ElsiPrototype3 extends NextFTCOpMode {
                 Gamepads.gamepad1().leftStickX().negate().deadZone(0.05).map(this::cube),
                 Gamepads.gamepad1().rightStickX().negate().deadZone(0.05).map(this::cube)
         );
+
         driverControlled.schedule();
+
+        follower().startTeleopDrive(true);
 
         /*
         Gamepads.gamepad2().dpadUp()
@@ -52,8 +55,8 @@ public class ElsiPrototype3 extends NextFTCOpMode {
                 .whenBecomesFalse(AutoTargetSubsystem.INSTANCE.endAutoTarget);
 
         Gamepads.gamepad1().leftTrigger().atLeast(0.8)
-                .whenBecomesTrue(AutoTargetSubsystem.INSTANCE.movementTest)
-                .whenBecomesFalse(AutoTargetSubsystem.INSTANCE.endmovementTest);
+                .whenBecomesTrue(ParkSubsystem.INSTANCE.beginParkMode)
+                .whenBecomesFalse(ParkSubsystem.INSTANCE.endParkMode);
     }
 
     @Override public void onUpdate() { }

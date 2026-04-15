@@ -24,14 +24,15 @@ public class Constants {
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1,0.0,0.00035,0.6,0.015));
             //.centripetalScaling(0.0005);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.995, 0.1, 0.1, 0.009,50,.6,10,1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.995, 0.1, 0.1, 0.009,50,.8,10,1);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .rightFrontMotorName("frontRight")
-            .rightRearMotorName("backRight")
-            .leftRearMotorName("backLeft")
-            .leftFrontMotorName("frontLeft")
+            .rightFrontMotorName("fr")
+            .rightRearMotorName("rr")
+            .leftRearMotorName("rl")
+            .leftFrontMotorName("fl")
+            .useBrakeModeInTeleOp(true)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
@@ -55,6 +56,7 @@ public class Constants {
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
                 .pinpointLocalizer(localizerConstants)
+
                 .build();
     }
 }

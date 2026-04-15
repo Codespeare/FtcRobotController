@@ -21,7 +21,6 @@ public class ElsiDrivetrain {
     public static Pose targetPose = new Pose();
     public static Pose lastTargetPose = new Pose();
     private static boolean holding = false;
-
     private static final double maxPower = 0.8;
 
 

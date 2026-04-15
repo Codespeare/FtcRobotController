@@ -15,7 +15,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 
 
-@TeleOp(name = "Elsi3", group = "TeleOp")
+@TeleOp(name = "Elsi3Teleop", group = "TeleOp")
 public class ElsiPrototype3 extends NextFTCOpMode {
     {
         addComponents(

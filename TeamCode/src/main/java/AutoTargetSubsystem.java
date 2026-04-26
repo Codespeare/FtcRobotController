@@ -23,6 +23,14 @@ public class AutoTargetSubsystem implements Subsystem {
             .setUpdate(() -> {
 
             })
+            .setIsDone(() -> {
+                return follower().atPose(
+                        goalPose,
+                        0.1,
+                        0.1,
+                        0.1
+                );
+            })
             .setInterruptible(true)
             .setStop((interrupted) -> {
                 if(interrupted) {
@@ -34,29 +42,7 @@ public class AutoTargetSubsystem implements Subsystem {
     public LambdaCommand endAutoTarget = new LambdaCommand().setStart(() -> {
         follower().breakFollowing();
         follower().startTeleopDrive(true);
-    });
-
-    public LambdaCommand movementTest = new LambdaCommand()
-            .setStart(() -> {
-                final Pose current = follower().getPose();
-
-                follower().holdPoint(new Pose (current.getX() - 5, current.getY() - 5, current.getHeading()),false);
-            })
-            .setUpdate(() -> {
-            })
-            .setInterruptible(true)
-            .setStop((interrupted) -> {
-                if(interrupted) {
-                    follower().breakFollowing();
-                    follower().startTeleopDrive(true);
-                }
-            });
-
-    public LambdaCommand endmovementTest = new LambdaCommand().setStart(() -> {
-        follower().breakFollowing();
-        follower().startTeleopDrive(true);
-    });
-
+    }).setIsDone(() -> {return true;});
 
     private static double getTargetAngle (Pose current, Pose goal) {
         //Returns Radians

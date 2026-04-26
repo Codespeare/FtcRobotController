@@ -5,10 +5,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.conditionals.IfElseCommand;
+import dev.nextftc.core.commands.groups.ParallelGroup;
+import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
+import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -21,6 +26,10 @@ public class ElsiPrototype3 extends NextFTCOpMode {
         addComponents(
                 new SubsystemComponent(AutoTargetSubsystem.INSTANCE),
                 new SubsystemComponent(ParkSubsystem.INSTANCE),
+                new SubsystemComponent(FlywheelSubsystem.INSTANCE),
+                new SubsystemComponent(IntakeSubsystem.INSTANCE),
+                new SubsystemComponent(TriggerSubsystem.INSTANCE),
+                new SubsystemComponent(MagazineSubsystem.INSTANCE),
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
@@ -28,11 +37,18 @@ public class ElsiPrototype3 extends NextFTCOpMode {
 
     }
 
-    @Override public void onInit() { }
+    private final Pose redCloseStartPose = new Pose(128.5,112.5, Math.toRadians(90));
+
+    @Override public void onInit() {
+        TriggerSubsystem.INSTANCE.open.run();
+    }
+
     @Override public void onWaitForStart() { }
     @Override public void onStartButtonPressed() {
-        //TODO: Replace with real starting poses
-        follower().setStartingPose(new Pose(72,72,Math.toRadians(90)));
+        ActiveOpMode.telemetry().setAutoClear(true);
+
+        //TODO: Pass ending pose from Auto to Teleop
+        follower().setStartingPose(redCloseStartPose);
 
         DriverControlledCommand driverControlled = new PedroDriverControlled(
                 Gamepads.gamepad1().leftStickY().negate().deadZone(0.05).map(this::cube),
@@ -44,22 +60,42 @@ public class ElsiPrototype3 extends NextFTCOpMode {
 
         follower().startTeleopDrive(true);
 
-        /*
-        Gamepads.gamepad2().dpadUp()
-                .whenBecomesTrue(Lift.INSTANCE.toHigh);
-
-         */
-
         Gamepads.gamepad1().rightTrigger().atLeast(0.8)
-                .whenBecomesTrue(AutoTargetSubsystem.INSTANCE.beginAutoTarget)
-                .whenBecomesFalse(AutoTargetSubsystem.INSTANCE.endAutoTarget);
+                .whenBecomesTrue(new SequentialGroup(
+                        new ParallelGroup(
+                            AutoTargetSubsystem.INSTANCE.beginAutoTarget,
+                            FlywheelSubsystem.INSTANCE.spinFlywheels(800) //TODO: Replace with real target velocity
+                        ),
+                        IntakeSubsystem.INSTANCE.enable,
+                        TriggerSubsystem.INSTANCE.open
+                        ))
+                .whenBecomesFalse(
+                        new ParallelGroup(
+                                FlywheelSubsystem.INSTANCE.spinDown(),
+                                AutoTargetSubsystem.INSTANCE.endAutoTarget,
+                                IntakeSubsystem.INSTANCE.disable,
+                                TriggerSubsystem.INSTANCE.close)
+                )
+                .whenFalse(autoIntake());
 
         Gamepads.gamepad1().leftTrigger().atLeast(0.8)
                 .whenBecomesTrue(ParkSubsystem.INSTANCE.beginParkMode)
                 .whenBecomesFalse(ParkSubsystem.INSTANCE.endParkMode);
+
+        TriggerSubsystem.INSTANCE.close.run();
     }
 
-    @Override public void onUpdate() { }
+    private Command autoIntake () {
+        return new IfElseCommand(
+                MagazineSubsystem.INSTANCE::getBallDetected,
+                IntakeSubsystem.INSTANCE.disable,
+                IntakeSubsystem.INSTANCE.enable
+        );
+    }
+
+    @Override public void onUpdate() {
+    }
+
     @Override public void onStop() { }
 
     private Double cube (Double value) {

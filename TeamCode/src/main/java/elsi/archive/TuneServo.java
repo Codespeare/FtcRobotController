@@ -1,11 +1,13 @@
 package elsi.archive;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @TeleOp(name = "TuneServo", group = "Config")
+@Disabled
 public class TuneServo extends OpMode {
     private static ServoEx trigger;
 

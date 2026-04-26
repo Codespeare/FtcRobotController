@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
@@ -24,38 +25,46 @@ public class ElsiAutonomous extends NextFTCOpMode {
         addComponents(
                 new SubsystemComponent(AutoTargetSubsystem.INSTANCE),
                 new SubsystemComponent(ParkSubsystem.INSTANCE),
+                new SubsystemComponent(FlywheelSubsystem.INSTANCE),
+                new SubsystemComponent(IntakeSubsystem.INSTANCE),
+                new SubsystemComponent(TriggerSubsystem.INSTANCE),
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
     }
 
-    private final Double delaySeconds = 1.5;
+    private final Double delaySeconds = 2.0;
 
-    private final Pose redCloseStartPose = new Pose(127.3,110, Math.toRadians(90));
-    private final Pose redCloseFirstShoot = new Pose(83,82, Math.toRadians(45));
-    private final Pose redCloseFirstSpike = new Pose(127,82, Math.toRadians(0));
-    private final Pose redCloseSecondShoot = new Pose(82.8,78, Math.toRadians(45));
-    private final Pose redCloseSecondSpike = new Pose(128.8,58.5, Math.toRadians(0));
-    private final Pose redCloseSecondSpikeControl = new Pose(80.4,56.4);
-    private final Pose redCloseThirdShoot = new Pose(76.9,16.3, Math.toRadians(67));
-    private final Pose redCloseThirdShootControl = new Pose(84,58);
-    private final Pose redCloseThirdSpike = new Pose(128,34.5, Math.toRadians(0));
-    private final Pose redCloseThirdSpikeControl = new Pose(83,37);
-    private final Pose redCloseFourthShoot = new Pose(84,12, Math.toRadians(69));
-    private final Pose redCloseEndPose = new Pose(83,59, Math.toRadians(-141));
+    private final Pose redGoal = new Pose(135,135);
+
+    private final Pose redCloseStartPose = new Pose(128.5,112.5, Math.toRadians(90));
+    private Pose redCloseShootPose = new Pose(96,96);
+    private final Pose redTopSpikePose = new Pose(128,83.5, Math.toRadians(0));
+    private final Pose redTopSpikeControl = new Pose(93,72);
+
+    private final Pose redMiddleSpikePose = new Pose(128,58.5, Math.toRadians(0));
+    private final Pose redMiddleSpikeControl = new Pose(87,41);
+
+    private final Pose redBottomSpikePose = new Pose(128,5, Math.toRadians(0));
+    private final Pose redBottomSpikeControl = new Pose(79.5,35);
+
+    private final Pose redCloseParkPose = new Pose(120,72, Math.toRadians(270));
 
 
     private Path redStartToFirstShoot;
-    private Path FirstShootToFirstSpike;
-    private Path FirstSpikeToSecondShoot;
-    private Path SecondShootToSecondSpike;
-    private Path SecondSpikeToThirdShoot;
-    private Path ThirdShootToThirdSpike;
-    private Path ThirdSpikeToFourthShoot;
-    private Path FourthShootToEnd;
+    private Path redPickupFirstSpike;
+    private Path redShootFirstSpike;
+    private Path redPickupSecondSpike;
+    private Path redShootSecondSpike;
+    private Path redPickupThirdSpike;
+    private Path redShootThirdSpike;
+    private Path redPark;
 
 
+    private double targetAngle (Pose current, Pose goal) {
+        return Math.atan2(goal.getY() - current.getY(), goal.getX() - current.getX());
+    }
 
     private Path buildBezierLinePath(Pose start, Pose end) {
         return buildBezierLinePath(start, end, 0.8);
@@ -79,39 +88,61 @@ public class ElsiAutonomous extends NextFTCOpMode {
 
     private Command pickupSpike (Path toSpike, Path fromSpike) {
         return new SequentialGroup(
-                new FollowPath(toSpike),
-                new FollowPath(fromSpike)
+                new ParallelGroup(
+                        new FollowPath(toSpike),
+                        FlywheelSubsystem.INSTANCE.spinDown(),
+                        IntakeSubsystem.INSTANCE.enable),
+                new ParallelGroup(
+                        new FollowPath(fromSpike),
+                        FlywheelSubsystem.INSTANCE.spinFlywheels(800),
+                        IntakeSubsystem.INSTANCE.disable)
         );
     }
+
+    private Command shoot () {
+        return new ParallelGroup(
+                IntakeSubsystem.INSTANCE.enable,
+                new Delay(delaySeconds)
+        );
+    }
+
     @Override public void onInit() {
-        redStartToFirstShoot = buildBezierLinePath(redCloseStartPose, redCloseFirstShoot);
-        FirstShootToFirstSpike = buildBezierLinePath(redCloseFirstShoot, redCloseFirstSpike, 0.0);
-        FirstSpikeToSecondShoot = buildBezierLinePath(redCloseFirstSpike, redCloseSecondShoot);
-        SecondShootToSecondSpike = buildBezierCurvePath(redCloseSecondShoot,redCloseSecondSpikeControl, redCloseSecondSpike, 0.0);
-        SecondSpikeToThirdShoot = buildBezierCurvePath(redCloseSecondSpike,redCloseThirdShootControl ,redCloseThirdShoot );
-        ThirdShootToThirdSpike = buildBezierCurvePath(redCloseThirdShoot, redCloseThirdSpikeControl,redCloseThirdSpike , 0.0);
-        ThirdSpikeToFourthShoot = buildBezierLinePath(redCloseThirdSpike, redCloseFourthShoot);
-        FourthShootToEnd = buildBezierLinePath(redCloseFourthShoot, redCloseEndPose);
+        redCloseShootPose = new Pose (redCloseShootPose.getX(),redCloseShootPose.getY(),targetAngle(redCloseShootPose,redGoal));
+
+        redStartToFirstShoot = buildBezierLinePath(redCloseStartPose, redCloseShootPose);
+        redPickupFirstSpike = buildBezierCurvePath(redCloseStartPose, redTopSpikeControl, redTopSpikePose);
+        redShootFirstSpike = buildBezierLinePath(redTopSpikePose, redCloseShootPose);
+        redPickupSecondSpike = buildBezierCurvePath(redCloseShootPose, redMiddleSpikeControl, redMiddleSpikePose);
+        redShootSecondSpike = buildBezierLinePath(redMiddleSpikePose, redCloseShootPose);
+        redPickupThirdSpike = buildBezierCurvePath(redCloseShootPose, redBottomSpikeControl, redBottomSpikePose);
+        redShootThirdSpike = buildBezierLinePath(redBottomSpikePose, redCloseShootPose);
+        redPark = buildBezierLinePath(redCloseShootPose, redCloseParkPose);
     }
     @Override public void onWaitForStart() { }
     @Override public void onStartButtonPressed() {
-        //TODO: Replace with real starting poses
-        //follower().setStartingPose(new Pose(128,112.5,Math.toRadians(90)));
         follower().setStartingPose(redCloseStartPose);
         new SequentialGroup(
-                new FollowPath(redStartToFirstShoot),
-                new Delay(delaySeconds),
-                pickupSpike(FirstShootToFirstSpike, FirstSpikeToSecondShoot),
-                new Delay(delaySeconds),
-                pickupSpike(SecondShootToSecondSpike, SecondSpikeToThirdShoot),
-                new Delay(delaySeconds),
-                pickupSpike(ThirdShootToThirdSpike, ThirdSpikeToFourthShoot),
-                new Delay(delaySeconds),
-                new FollowPath(FourthShootToEnd)
+                new ParallelGroup(
+                        new FollowPath(redStartToFirstShoot),
+                        //TODO: Actual target velocity adjusted for position
+                        FlywheelSubsystem.INSTANCE.spinFlywheels(800)),
+                shoot(),
+                pickupSpike(redPickupFirstSpike, redShootFirstSpike),
+                shoot(),
+                pickupSpike(redPickupSecondSpike, redShootSecondSpike),
+                shoot(),
+                pickupSpike(redPickupThirdSpike, redShootThirdSpike),
+                shoot(),
+                new ParallelGroup(
+                        new FollowPath(redPark),
+                        FlywheelSubsystem.INSTANCE.spinDown(),
+                        IntakeSubsystem.INSTANCE.disable)
         ).schedule();
     }
 
-    @Override public void onUpdate() { }
+    @Override public void onUpdate() {
+    }
+
     @Override public void onStop() { }
 
 

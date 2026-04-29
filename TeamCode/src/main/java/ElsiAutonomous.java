@@ -36,18 +36,20 @@ public class ElsiAutonomous extends NextFTCOpMode {
 
     private final Double delaySeconds = 2.0;
 
+    private final Double closeGoalFlywheelSpeed = 680.0;
+
     private final Pose redGoal = new Pose(135,135);
 
     private final Pose redCloseStartPose = new Pose(128.5,112.5, Math.toRadians(90));
     private Pose redCloseShootPose = new Pose(96,96);
-    private final Pose redTopSpikePose = new Pose(128,83.5, Math.toRadians(0));
+    private final Pose redTopSpikePose = new Pose(126,83.5, Math.toRadians(0));
     private final Pose redTopSpikeControl = new Pose(93,72);
 
-    private final Pose redMiddleSpikePose = new Pose(128,58.5, Math.toRadians(0));
-    private final Pose redMiddleSpikeControl = new Pose(87,41);
+    private final Pose redMiddleSpikePose = new Pose(124,59.5, Math.toRadians(0));
+    private final Pose redMiddleSpikeControl = new Pose(84.3,52.5);
 
-    private final Pose redBottomSpikePose = new Pose(128,5, Math.toRadians(0));
-    private final Pose redBottomSpikeControl = new Pose(79.5,35);
+    private final Pose redBottomSpikePose = new Pose(126,35, Math.toRadians(0));
+    private final Pose redBottomSpikeControl = new Pose(79.5,28.7);
 
     private final Pose redCloseParkPose = new Pose(120,72, Math.toRadians(270));
 
@@ -94,15 +96,21 @@ public class ElsiAutonomous extends NextFTCOpMode {
                         IntakeSubsystem.INSTANCE.enable),
                 new ParallelGroup(
                         new FollowPath(fromSpike),
-                        FlywheelSubsystem.INSTANCE.spinFlywheels(800),
+                        FlywheelSubsystem.INSTANCE.spinFlywheels(() -> {
+                            return closeGoalFlywheelSpeed;
+                        }),
                         IntakeSubsystem.INSTANCE.disable)
         );
     }
 
     private Command shoot () {
-        return new ParallelGroup(
-                IntakeSubsystem.INSTANCE.enable,
-                new Delay(delaySeconds)
+        return new SequentialGroup(
+                new ParallelGroup(
+                    IntakeSubsystem.INSTANCE.enable,
+                    TriggerSubsystem.INSTANCE.open
+                ),
+                new Delay(delaySeconds),
+                TriggerSubsystem.INSTANCE.close
         );
     }
 
@@ -110,11 +118,11 @@ public class ElsiAutonomous extends NextFTCOpMode {
         redCloseShootPose = new Pose (redCloseShootPose.getX(),redCloseShootPose.getY(),targetAngle(redCloseShootPose,redGoal));
 
         redStartToFirstShoot = buildBezierLinePath(redCloseStartPose, redCloseShootPose);
-        redPickupFirstSpike = buildBezierCurvePath(redCloseStartPose, redTopSpikeControl, redTopSpikePose);
+        redPickupFirstSpike = buildBezierCurvePath(redCloseShootPose, redTopSpikeControl, redTopSpikePose);
         redShootFirstSpike = buildBezierLinePath(redTopSpikePose, redCloseShootPose);
-        redPickupSecondSpike = buildBezierCurvePath(redCloseShootPose, redMiddleSpikeControl, redMiddleSpikePose);
+        redPickupSecondSpike = buildBezierCurvePath(redCloseShootPose, redMiddleSpikeControl, redMiddleSpikePose,.1);
         redShootSecondSpike = buildBezierLinePath(redMiddleSpikePose, redCloseShootPose);
-        redPickupThirdSpike = buildBezierCurvePath(redCloseShootPose, redBottomSpikeControl, redBottomSpikePose);
+        redPickupThirdSpike = buildBezierCurvePath(redCloseShootPose, redBottomSpikeControl, redBottomSpikePose, .1);
         redShootThirdSpike = buildBezierLinePath(redBottomSpikePose, redCloseShootPose);
         redPark = buildBezierLinePath(redCloseShootPose, redCloseParkPose);
     }
@@ -125,7 +133,9 @@ public class ElsiAutonomous extends NextFTCOpMode {
                 new ParallelGroup(
                         new FollowPath(redStartToFirstShoot),
                         //TODO: Actual target velocity adjusted for position
-                        FlywheelSubsystem.INSTANCE.spinFlywheels(800)),
+                        FlywheelSubsystem.INSTANCE.spinFlywheels(() -> {
+                            return closeGoalFlywheelSpeed;
+                        })),
                 shoot(),
                 pickupSpike(redPickupFirstSpike, redShootFirstSpike),
                 shoot(),

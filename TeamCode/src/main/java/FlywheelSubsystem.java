@@ -1,3 +1,5 @@
+import java.util.function.DoubleSupplier;
+
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
@@ -25,20 +27,20 @@ public class FlywheelSubsystem implements Subsystem {
 
     private final ControlSystem topControl = ControlSystem.builder()
             .velSquID(kP)
-            //.basicFF(kV)
+            .basicFF(kV)
             .build();
 
     private final ControlSystem bottomControl = ControlSystem.builder()
             .velSquID(kP)
-            //.basicFF(kV)
+            .basicFF(kV)
             .build();
 
-    public Command spinFlywheels (double target) {
+    public Command spinFlywheels (DoubleSupplier target) {
         return new LambdaCommand()
                 .setStart(() -> {
                     new ParallelGroup(
-                            new RunToVelocity(topControl,target,50.0),
-                            new RunToVelocity(bottomControl,target, 50.0)
+                            new RunToVelocity(topControl,target.getAsDouble(),50.0),
+                            new RunToVelocity(bottomControl,target.getAsDouble(), 50.0)
                     ).run();
                 })
                 .setIsDone(() -> {
@@ -110,10 +112,6 @@ public class FlywheelSubsystem implements Subsystem {
         boolean readyToFire = topControl.isWithinTolerance(new KineticState(Double.POSITIVE_INFINITY, 50.0))
                 && bottomControl.isWithinTolerance(new KineticState(Double.POSITIVE_INFINITY, 50.0));
 
-        ActiveOpMode.telemetry().addData("Ready to Fire", readyToFire);
-
-
-        ActiveOpMode.telemetry().update();
 
     }
 

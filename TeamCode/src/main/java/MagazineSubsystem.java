@@ -1,13 +1,12 @@
-
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.subsystems.Subsystem;
-import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class MagazineSubsystem implements Subsystem {
@@ -16,10 +15,9 @@ public class MagazineSubsystem implements Subsystem {
 
     private NormalizedColorSensor colorSensor;
 
-    private final ServoEx indicatorLight1 = new ServoEx("light1",0);
-    private final ServoEx indicatorLight2 = new ServoEx("light2",0);
+    private ServoEx indicatorLight1,indicatorLight2;
 
-    private final double Red = 0.31;
+    private final double Red = 0.28;
     private final double Green = 0.500;
 
     private final int WINDOW_SIZE = 30;
@@ -42,10 +40,13 @@ public class MagazineSubsystem implements Subsystem {
     public void initialize() {
         // initialization logic (runs on init)
 
+        indicatorLight1 = new ServoEx(ActiveOpMode.hardwareMap(), "light1");
+        indicatorLight2 = new ServoEx(ActiveOpMode.hardwareMap(), "light2");
+
         colorSensor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "color");
 
-        indicatorLight1.setPosition(Red);
-        indicatorLight2.setPosition(Red);
+        indicatorLight1.set(Red);
+        indicatorLight2.set(Red);
     }
 
     @Override
@@ -69,12 +70,12 @@ public class MagazineSubsystem implements Subsystem {
         // This prevents the lights from flickering if the sensor is noisy
         if (average > 0.6) {
             ballDetected = true;
-            indicatorLight1.setPosition(Green);
-            indicatorLight2.setPosition(Green);
+            indicatorLight1.set(Green);
+            indicatorLight2.set(Green);
         } else {
             ballDetected = false;
-            indicatorLight1.setPosition(Red);
-            indicatorLight2.setPosition(Red);
+            indicatorLight1.set(Red);
+            indicatorLight2.set(Red);
         }
     }
 

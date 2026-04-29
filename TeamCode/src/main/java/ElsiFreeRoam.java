@@ -20,11 +20,10 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 
 
-@TeleOp(name = "Elsi3Teleop", group = "TeleOp")
-public class ElsiPrototype3 extends NextFTCOpMode {
+@TeleOp(name = "ElsiFreeRoam", group = "Event")
+public class ElsiFreeRoam extends NextFTCOpMode {
     {
         addComponents(
-                new SubsystemComponent(AutoTargetSubsystem.INSTANCE),
                 new SubsystemComponent(ParkSubsystem.INSTANCE),
                 new SubsystemComponent(FlywheelSubsystem.INSTANCE),
                 new SubsystemComponent(IntakeSubsystem.INSTANCE),
@@ -37,7 +36,13 @@ public class ElsiPrototype3 extends NextFTCOpMode {
 
     }
 
+    private static double targetVelocity = 700;
+
     private final Pose redCloseStartPose = new Pose(128.5,112.5, Math.toRadians(90));
+
+    private static double getTargetVelocity () {
+        return targetVelocity;
+    }
 
     @Override public void onInit() {
         TriggerSubsystem.INSTANCE.close.run();
@@ -62,17 +67,13 @@ public class ElsiPrototype3 extends NextFTCOpMode {
 
         Gamepads.gamepad1().rightTrigger().atLeast(0.8)
                 .whenBecomesTrue(new SequentialGroup(
-                        new ParallelGroup(
-                            AutoTargetSubsystem.INSTANCE.beginAutoTarget,
-                            FlywheelSubsystem.INSTANCE.spinFlywheels(() -> {return 700;}) //TODO: Replace with real target velocity
-                        ),
+                        FlywheelSubsystem.INSTANCE.spinFlywheels(ElsiFreeRoam::getTargetVelocity),
                         IntakeSubsystem.INSTANCE.enable,
                         TriggerSubsystem.INSTANCE.open
-                        ))
+                ))
                 .whenBecomesFalse(
                         new ParallelGroup(
                                 FlywheelSubsystem.INSTANCE.spinDown(),
-                                AutoTargetSubsystem.INSTANCE.endAutoTarget,
                                 IntakeSubsystem.INSTANCE.disable,
                                 TriggerSubsystem.INSTANCE.close)
                 )
@@ -81,6 +82,16 @@ public class ElsiPrototype3 extends NextFTCOpMode {
         Gamepads.gamepad1().leftTrigger().atLeast(0.8)
                 .whenBecomesTrue(ParkSubsystem.INSTANCE.beginParkMode)
                 .whenBecomesFalse(ParkSubsystem.INSTANCE.endParkMode);
+
+        Gamepads.gamepad1().dpadUp().whenBecomesTrue(() -> {
+            if(targetVelocity < 1000)
+                targetVelocity += 50;
+        });
+
+        Gamepads.gamepad1().dpadDown().whenBecomesTrue(() -> {
+            if(targetVelocity > 100)
+                targetVelocity -= 50;
+        });
 
     }
 
@@ -93,6 +104,8 @@ public class ElsiPrototype3 extends NextFTCOpMode {
     }
 
     @Override public void onUpdate() {
+        ActiveOpMode.telemetry().addData("Target Velocity", targetVelocity);
+        ActiveOpMode.telemetry().update();
     }
 
     @Override public void onStop() { }

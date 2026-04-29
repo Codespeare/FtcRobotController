@@ -11,6 +11,8 @@ public class AutoTargetSubsystem implements Subsystem {
 
     private final Pose goalPose = new Pose(144, 144);
 
+    private Pose targetPose;
+
     private static double targetAngle = 0;
 
     public LambdaCommand beginAutoTarget = new LambdaCommand()
@@ -18,17 +20,18 @@ public class AutoTargetSubsystem implements Subsystem {
                 final Pose current = follower().getPose();
                 final double targetAngle = getTargetAngle(current, goalPose);
                 //follower().turnTo(targetAngle);
-                follower().holdPoint(new Pose (current.getX(), current.getY(), targetAngle),false);
+                targetPose = new Pose (current.getX(), current.getY(), targetAngle);
+                follower().holdPoint(targetPose,false);
             })
             .setUpdate(() -> {
 
             })
             .setIsDone(() -> {
                 return follower().atPose(
-                        goalPose,
-                        0.1,
-                        0.1,
-                        0.1
+                        targetPose,
+                        5,
+                        5,
+                        5
                 );
             })
             .setInterruptible(true)

@@ -1,6 +1,7 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+    maven { url = "https://jitpack.io" }
     maven { url = 'https://maven.brott.dev/' }
     maven { url = "https://mymaven.bylazar.com/releases" }
 }
@@ -19,9 +20,19 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:11.1.0'
     //implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'com.pedropathing:ftc:2.1.1'
+    implementation 'com.pedropathing:ftc:2.1.2'
     implementation 'com.pedropathing:telemetry:1.0.0'
+    implementation 'com.pedropathing:ivy:1.0.0'
     implementation 'com.bylazar:fullpanels:1.0.12'
     implementation "com.bylazar:graph:1.0.4"
+    implementation 'com.github.aaravdhawan25.FtcAutoTune:pidautotuner-core:v0.3.7'
+    implementation 'com.github.aaravdhawan25.FtcAutoTune:pidautotuner-ftc:v0.3.7'
+
+
+
+    // Optional but recommended: FTC Dashboard for live telemetry
+    implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
+        exclude group: 'org.firstinspires.ftc'
+    }
 }
 

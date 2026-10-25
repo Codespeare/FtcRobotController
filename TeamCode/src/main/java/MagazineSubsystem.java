@@ -1,8 +1,9 @@
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.LambdaCommand;
@@ -15,10 +16,14 @@ public class MagazineSubsystem implements Subsystem {
 
     private NormalizedColorSensor colorSensor;
 
-    private ServoEx indicatorLight1,indicatorLight2;
+    private DistanceSensor distanceSensor;
+
+    //private ServoEx indicatorLight1,indicatorLight2;
 
     private final double Red = 0.28;
     private final double Green = 0.500;
+
+    private final double emptyHue = 120; // 120 - 180??
 
     private final int WINDOW_SIZE = 30;
     private final boolean[] readings = new boolean[WINDOW_SIZE];
@@ -40,21 +45,26 @@ public class MagazineSubsystem implements Subsystem {
     public void initialize() {
         // initialization logic (runs on init)
 
-        indicatorLight1 = new ServoEx(ActiveOpMode.hardwareMap(), "light1");
-        indicatorLight2 = new ServoEx(ActiveOpMode.hardwareMap(), "light2");
+        //indicatorLight1 = new ServoEx(ActiveOpMode.hardwareMap(), "light1");
+        //indicatorLight2 = new ServoEx(ActiveOpMode.hardwareMap(), "light2");
 
         colorSensor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "color");
+        distanceSensor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "color");
 
-        indicatorLight1.set(Red);
-        indicatorLight2.set(Red);
+        //indicatorLight1.set(Red);
+        //indicatorLight2.set(Red);
     }
 
     @Override
     public void periodic() {
         // periodic logic (runs every loop)
 
+        double distance = distanceSensor.getDistance(DistanceUnit.MM);
+
+
         // Add the new reading to the buffer
-        boolean currentBall = processColor();
+        //boolean currentBall = processColor();
+        boolean currentBall = distance < 28.0;
         readings[index] = currentBall;
         index = (index + 1) % WINDOW_SIZE;
         if (count < WINDOW_SIZE) count++;
@@ -68,22 +78,30 @@ public class MagazineSubsystem implements Subsystem {
 
         // Use a threshold (e.g., 70% true) to trigger the lights
         // This prevents the lights from flickering if the sensor is noisy
-        if (average > 0.6) {
+        if (average > 0.4) {
             ballDetected = true;
-            indicatorLight1.set(Green);
-            indicatorLight2.set(Green);
+            //indicatorLight1.set(Green);
+            //indicatorLight2.set(Green);
         } else {
             ballDetected = false;
-            indicatorLight1.set(Red);
-            indicatorLight2.set(Red);
+            //indicatorLight1.set(Red);
+            //indicatorLight2.set(Red);
         }
+
+        ActiveOpMode.telemetry().addData("Current Ball Detection Average", average);
+
+        ActiveOpMode.telemetry().addData("Current Distance Sensor", distance);
     }
 
     private boolean processColor () {
         double hue;
         NormalizedRGBA colors = colorSensor.getNormalizedColors();
         hue = JavaUtil.colorToHue(colors.toColor());
-        return hue > 100;
+        ActiveOpMode.telemetry().addData("color detected", colors.toString());
+        ActiveOpMode.telemetry().addData("hue detected", hue);
+        //return hue != emptyHue;
+        return hue == 160 || hue == 210;
+        //return (hue <= 120.0 || hue > 180.0) && hue != 0.0;
     }
 
 }

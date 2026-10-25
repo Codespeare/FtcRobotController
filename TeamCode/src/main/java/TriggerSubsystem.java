@@ -15,16 +15,20 @@ public class TriggerSubsystem  implements Subsystem {
 
     public LambdaCommand open = new LambdaCommand()
             .setStart(() -> {
-                trigger.set(70);
+                //trigger.set(70); //Elsi
+                trigger.set(80); //Opal
             })
-            .setIsDone(()->{return true;});
+            .setIsDone(()->{return true;})
+            .setInterruptible(true);
 
 
     public LambdaCommand close = new LambdaCommand()
             .setStart(() -> {
-                trigger.set(210);
+                //trigger.set(210); //Elsi
+                trigger.set(170); //Opal
             })
-            .setIsDone(()->{return true;});
+            .setIsDone(()->{return true;})
+            .setInterruptible(true);
 
 
     @Override

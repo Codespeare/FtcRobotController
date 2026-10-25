@@ -1,6 +1,7 @@
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -21,6 +22,7 @@ import dev.nextftc.hardware.driving.DriverControlledCommand;
 
 
 @TeleOp(name = "ElsiFreeRoam", group = "Event")
+@Disabled
 public class ElsiFreeRoam extends NextFTCOpMode {
     {
         addComponents(
